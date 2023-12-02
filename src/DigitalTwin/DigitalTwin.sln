@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigitalTwin.AppHost", "Digi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DigitalTwin.ServiceDefaults", "DigitalTwin.ServiceDefaults\DigitalTwin.ServiceDefaults.csproj", "{C439E588-1A4A-4F7A-B60B-8910A424284A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DigitalTwin.Blazor", "DigitalTwin.Blazor\DigitalTwin.Blazor.csproj", "{0F257BB0-E26F-4E06-9403-29D6892E00FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{C439E588-1A4A-4F7A-B60B-8910A424284A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C439E588-1A4A-4F7A-B60B-8910A424284A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C439E588-1A4A-4F7A-B60B-8910A424284A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F257BB0-E26F-4E06-9403-29D6892E00FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F257BB0-E26F-4E06-9403-29D6892E00FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F257BB0-E26F-4E06-9403-29D6892E00FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F257BB0-E26F-4E06-9403-29D6892E00FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

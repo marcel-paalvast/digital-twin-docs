@@ -1,0 +1,30 @@
+﻿@page "/docs/{Page}"
+@using DigitalTwin.Blazor.Services
+@attribute [StreamRendering]
+@inject IDocumentationService DocumentationService
+
+<PageTitle>Documentation</PageTitle>
+
+@if (Content == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @((MarkupString)Content)
+}
+
+@code {
+    [Parameter]
+    public string? Page { get; set; }
+    public string? Content { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Page is null)
+        {
+            return;
+        }
+        Content = await DocumentationService.GetDocumentationHtmlAsync(Page, CancellationToken.None);
+    }
+}
