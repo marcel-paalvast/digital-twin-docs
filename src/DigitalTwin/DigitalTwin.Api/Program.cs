@@ -6,6 +6,8 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
+builder.AddServiceDefaults();
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     //options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
@@ -24,6 +26,8 @@ builder.Services.AddSingleton<IMarkdownService, OpenAiMarkdownService>();
 
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 var markdownGroup = app.MapGroup("/markdown");
 markdownGroup.MapGet("/{subject}.md", async (string subject, CancellationToken cancellationToken, [FromServices] IMarkdownService service) =>
