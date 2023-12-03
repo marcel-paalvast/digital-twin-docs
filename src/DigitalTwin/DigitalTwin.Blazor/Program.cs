@@ -5,7 +5,7 @@ using DigitalTwin.Blazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddCustomServiceDefaults();
+builder.AddServiceDefaultsProlongedTimeout();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
