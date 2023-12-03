@@ -1,8 +1,12 @@
-﻿@inherits LayoutComponentBase
+﻿@using DigitalTwin.Blazor.Models
+@using Microsoft.Extensions.Options
+@inherits LayoutComponentBase
+@inject IOptions<PageOptions> PageOptions;
+
 
 <div class="page">
     <div class="banner">
-        <h1>Documentation</h1>
+        <h1>@PageOptions.Value.Company.Name Documentation</h1>
     </div>
     <article class="content">
         @Body
