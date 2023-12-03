@@ -35,6 +35,8 @@ public class OpenAiMarkdownService : IMarkdownService
             You are tasked to create internal documentation for a company named "{_company.Name}" which "{_company.Description}".
             In the documentation describe the entire organization and all of its aspects which will be used as guidance to direct the company.
             USE markdown format
+            USE links to other markdown pages using: [key words](example-page.md)
+            DO not include a table of contents
             Be detailed
             Include both paragraphs of text and bullet points that start with keywords
             Do NOT explain yourself or the answer
