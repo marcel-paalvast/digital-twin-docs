@@ -1,5 +1,6 @@
 using DigitalTwin.Blazor;
 using DigitalTwin.Blazor.Components;
+using DigitalTwin.Blazor.Models;
 using DigitalTwin.Blazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,11 @@ builder.AddCustomServiceDefaults();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddOptions<PageOptions>().Configure<IConfiguration>((settings, config) =>
+{
+    config.GetSection("Settings").Bind(settings);
+});
 
 builder.Services.AddScoped<IMarkdownService, MarkdownService>();
 builder.Services.AddScoped<IDocumentationService, DocumentationService>();

@@ -1,13 +1,39 @@
-﻿@page "/docs/{Page}"
+﻿@page "/"
+@page "/docs/{Page}"
+@using DigitalTwin.Blazor.Models
 @using DigitalTwin.Blazor.Services
+@using Microsoft.Extensions.Options
 @attribute [StreamRendering]
 @inject IDocumentationService DocumentationService
+@inject IOptions<PageOptions> PageOptions;
 
-<PageTitle>Documentation</PageTitle>
+<PageTitle>@Company?.Name Documentation</PageTitle>
 
 @if (Content == null)
 {
-    <p><em>Loading...</em></p>
+    <h1>
+        <span class="skeleton-box" style="width:30%;"></span>
+    </h1>
+    <span class="skeleton-box" style="width:90%;"></span>
+    <span class="skeleton-box" style="width:95%;"></span>
+    <span class="skeleton-box" style="width:93%;"></span>
+    <span class="skeleton-box" style="width:90%;"></span>
+    <span class="whitespace"></span>
+    <h2>
+        <span class="skeleton-box" style="width:35%;"></span>
+    </h2>
+    <span class="skeleton-box" style="width:96%;"></span>
+    <span class="skeleton-box" style="width:91%;"></span>
+    <span class="skeleton-box" style="width:94%;"></span>
+    <span class="whitespace"></span>
+    <h2>
+        <span class="skeleton-box" style="width:32%;"></span>
+    </h2>
+    <span class="skeleton-box" style="width:95%;"></span>
+    <span class="skeleton-box" style="width:91%;"></span>
+    <span class="skeleton-box" style="width:97%;"></span>
+    <span class="skeleton-box" style="width:40%;"></span>
+    <span class="whitespace"></span>
 }
 else
 {
@@ -15,16 +41,15 @@ else
 }
 
 @code {
+    public Company? Company { get; set; }
     [Parameter]
     public string? Page { get; set; }
     public string? Content { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        if (Page is null)
-        {
-            return;
-        }
+        Company = PageOptions.Value.Company;
+        Page ??= "main";
         Content = await DocumentationService.GetDocumentationHtmlAsync(Page, CancellationToken.None);
     }
 }
