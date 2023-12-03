@@ -22,6 +22,7 @@ builder.Services.AddOptions<OpenAiOptions>().Configure<IConfiguration>((settings
 });
 
 builder.Services.AddSingleton<IMarkdownService, OpenAiMarkdownService>();
+builder.Services.AddSingleton<IEnhanceMarkdownService, EnhanceMarkdownService>();
 
 
 var app = builder.Build();
@@ -29,7 +30,13 @@ var app = builder.Build();
 app.MapDefaultEndpoints();
 
 var markdownGroup = app.MapGroup("/markdown");
-markdownGroup.MapGet("/{subject}.md", async (string subject, CancellationToken cancellationToken, [FromServices] IMarkdownService service) =>
+
+markdownGroup.MapGet("/{subject}.md", async (
+    string subject, 
+    CancellationToken cancellationToken, 
+    [FromServices] IMarkdownService markdownService,
+    [FromServices] IEnhanceMarkdownService enhanceMarkdownService
+    ) =>
 {
     const int maxChars = 64;
     if (subject.Length > maxChars)
@@ -41,7 +48,8 @@ markdownGroup.MapGet("/{subject}.md", async (string subject, CancellationToken c
         });
     }
 
-    var markdown = await service.GenerateMarkdownAsync(subject, cancellationToken);
+    var markdown = await markdownService.GenerateMarkdownAsync(subject, cancellationToken);
+    markdown = enhanceMarkdownService.MarkAdditionalLinks(markdown);
     return Results.Text(content: markdown, contentType: "text/markdown", contentEncoding: Encoding.UTF8, statusCode: 200);
 });
 
