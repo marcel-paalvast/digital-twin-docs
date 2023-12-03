@@ -87,17 +87,21 @@ markdownGroup.MapGet("/{subject}.md", async (
         isGenerated = true;
     }
 
+    var tasks = new List<Task>();
+
     //store in cache
     if (!isCached && await featureManager.IsEnabledAsync(FeatureFlags.CacheMarkdown))
     {
-        await cacheService.SetMarkdownAsync(subject, markdown, cancellationToken);
+        tasks.Add(cacheService.SetMarkdownAsync(subject, markdown, cancellationToken));
     }
 
     //store in persistent storage
     if (isGenerated && await featureManager.IsEnabledAsync(FeatureFlags.PersistentStorage))
     {
-        await persistentStorageService.SetMarkdownAsync(subject, markdown, cancellationToken);
+        tasks.Add(persistentStorageService.SetMarkdownAsync(subject, markdown, cancellationToken));
     }
+
+    await Task.WhenAll(tasks);
 
     return Results.Text(content: markdown, contentType: "text/markdown", contentEncoding: Encoding.UTF8, statusCode: 200);
 });
