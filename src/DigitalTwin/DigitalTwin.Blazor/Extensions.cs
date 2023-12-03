@@ -25,6 +25,10 @@ public static class Extensions
                     Timeout = TimeSpan.FromSeconds(30),
 
                 };
+                c.TotalRequestTimeout = new()
+                {
+                    Timeout = TimeSpan.FromSeconds(100),
+                };
             });
 
             // Turn on service discovery by default
