@@ -29,6 +29,7 @@ builder.Services.AddOptions<OpenAiOptions>().Configure<IConfiguration>((settings
 builder.Services.AddSingleton<IMarkdownService, OpenAiMarkdownService>();
 builder.Services.AddSingleton<IEnhanceMarkdownService, EnhanceMarkdownService>();
 builder.Services.AddSingleton<IIPersistentStorageService, BlobPersistentStorageService>();
+builder.Services.AddSingleton<ICacheService, DistributedCacheService>();
 
 builder.Services.AddFeatureManagement();
 
@@ -43,7 +44,7 @@ markdownGroup.MapGet("/{subject}.md", async (
     CancellationToken cancellationToken,
     [FromServices] IMarkdownService markdownService,
     [FromServices] IEnhanceMarkdownService enhanceMarkdownService,
-    [FromServices] IDistributedCache distributedCache,
+    [FromServices] ICacheService cacheService,
     [FromServices] IIPersistentStorageService persistentStorageService,
     [FromServices] IFeatureManager featureManager
     ) =>
@@ -58,42 +59,42 @@ markdownGroup.MapGet("/{subject}.md", async (
         });
     }
 
+    string? markdown = null;
+    var isCached = false;
+    var isGenerated = false;
+
     //get from cache
-    if (await featureManager.IsEnabledAsync(FeatureFlags.CacheMarkdown))
+    if (markdown is null && await featureManager.IsEnabledAsync(FeatureFlags.CacheMarkdown))
     {
-        var cachedMarkdown = await distributedCache.GetStringAsync(subject, cancellationToken);
-        if (cachedMarkdown is not null)
+        markdown = await cacheService.GetMarkdownAsync(subject, cancellationToken);
+        if (markdown is not null)
         {
-            return Results.Text(content: cachedMarkdown, contentType: "text/markdown", contentEncoding: Encoding.UTF8, statusCode: 200);
+            isCached = true;
         }
     }
 
     //get from persistent storage
-    if (await featureManager.IsEnabledAsync(FeatureFlags.PersistentStorage))
+    if (markdown is null && await featureManager.IsEnabledAsync(FeatureFlags.PersistentStorage))
     {
-        var storedMarkdown = await persistentStorageService.GetMarkdownAsync(subject, cancellationToken);
-        if (storedMarkdown is not null)
-        {
-            return Results.Text(content: storedMarkdown, contentType: "text/markdown", contentEncoding: Encoding.UTF8, statusCode: 200);
-        }
+        markdown = await persistentStorageService.GetMarkdownAsync(subject, cancellationToken);
     }
 
     //generate new markdown
-    var markdown = await markdownService.GenerateMarkdownAsync(subject, cancellationToken);
-    markdown = enhanceMarkdownService.MarkAdditionalLinks(markdown);
+    if (markdown is null)
+    {
+        markdown = await markdownService.GenerateMarkdownAsync(subject, cancellationToken);
+        markdown = enhanceMarkdownService.MarkAdditionalLinks(markdown);
+        isGenerated = true;
+    }
 
     //store in cache
-    if (await featureManager.IsEnabledAsync(FeatureFlags.CacheMarkdown))
+    if (!isCached && await featureManager.IsEnabledAsync(FeatureFlags.CacheMarkdown))
     {
-        var options = new DistributedCacheEntryOptions()
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60),
-        };
-        await distributedCache.SetStringAsync(subject, markdown, options, cancellationToken);
+        await cacheService.SetMarkdownAsync(subject, markdown, cancellationToken);
     }
 
     //store in persistent storage
-    if (await featureManager.IsEnabledAsync(FeatureFlags.PersistentStorage))
+    if (isGenerated && await featureManager.IsEnabledAsync(FeatureFlags.PersistentStorage))
     {
         await persistentStorageService.SetMarkdownAsync(subject, markdown, cancellationToken);
     }
