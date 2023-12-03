@@ -17,7 +17,7 @@ public partial class EnhanceMarkdownService : IEnhanceMarkdownService
             var noParenthesis = RemoveParenthesis(group2);
             var normalized = RemoveDiacritics(noParenthesis);
             var link = FindNonLowercaseAlphabeticalText().Replace(normalized.ToLowerInvariant(), "-").Trim('-');
-            return $"{m.Groups[1].Value}[{group2}]({link}.md){m.Groups[4].Value}{m.Groups[3].Value}";
+            return $"{m.Groups[1].Value}[{group2}{m.Groups[4].Value}]({link}.md){m.Groups[3].Value}";
         }
 
         return FindMarkdownBulletPointHeaders().Replace(markdown, evaluator);
@@ -29,7 +29,7 @@ public partial class EnhanceMarkdownService : IEnhanceMarkdownService
     static string RemoveDiacritics(string input) =>
         FindDiacritics().Replace(input.Normalize(System.Text.NormalizationForm.FormD), "");
 
-    [GeneratedRegex(@"^\s*((?:[0-9]+\.|-)\s+)((?:\*\*)?[A-Za-z][^\.]{0,64}?)(:(\*\*)?|\r?\n)", RegexOptions.Multiline)]
+    [GeneratedRegex(@"^\s*((?:[0-9]+\.|-)\s+)((?:\*\*)?[A-Za-z][^\.]{0,64}?)(:|\r?\n)(\*\*)?", RegexOptions.Multiline)]
     private static partial Regex FindMarkdownBulletPointHeaders();
     [GeneratedRegex(@"\p{M}")]
     private static partial Regex FindDiacritics();
