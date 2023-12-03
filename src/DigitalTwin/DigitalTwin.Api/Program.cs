@@ -1,6 +1,7 @@
 using DigitalTwin.Api.Models;
 using DigitalTwin.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -24,6 +25,7 @@ builder.Services.AddOptions<OpenAiOptions>().Configure<IConfiguration>((settings
 builder.Services.AddSingleton<IMarkdownService, OpenAiMarkdownService>();
 builder.Services.AddSingleton<IEnhanceMarkdownService, EnhanceMarkdownService>();
 
+builder.Services.AddFeatureManagement();
 
 var app = builder.Build();
 
@@ -32,8 +34,8 @@ app.MapDefaultEndpoints();
 var markdownGroup = app.MapGroup("/markdown");
 
 markdownGroup.MapGet("/{subject}.md", async (
-    string subject, 
-    CancellationToken cancellationToken, 
+    string subject,
+    CancellationToken cancellationToken,
     [FromServices] IMarkdownService markdownService,
     [FromServices] IEnhanceMarkdownService enhanceMarkdownService
     ) =>
