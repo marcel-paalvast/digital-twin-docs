@@ -1,3 +1,6 @@
+[![Hack Together: The Great .NET 8 Hack](https://img.shields.io/badge/Microsoft-Hack--Together--.NET8-512BD4?style=for-the-badge&logo=microsoft)](https://github.com/microsoft/hack-together-dotnet)
+
+
 # Digital Twin Docs
 
 A web application that effortlessly creates a digital twin documentation environment for your company.
