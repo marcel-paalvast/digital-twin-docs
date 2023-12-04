@@ -47,5 +47,11 @@ public class BlobPersistentStorageService(BlobServiceClient client) : IIPersiste
         }
     }
 
+    public async Task<bool> MarkdownExistsAsync(string subject, CancellationToken cancellationToken)
+    {
+        var blob = _container.GetBlobClient(GetBlobName(subject));
+        return await blob.ExistsAsync(cancellationToken);
+    }
+
     private static string GetBlobName(string subject) => $"{subject}.md";
 }

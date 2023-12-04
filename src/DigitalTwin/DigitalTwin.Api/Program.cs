@@ -12,6 +12,7 @@ builder.AddServiceDefaults();
 
 builder.AddRedisDistributedCache("cache");
 builder.AddAzureBlobService("blobs");
+builder.AddAzureServiceBus("messaging");
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -30,6 +31,7 @@ builder.Services.AddSingleton<IMarkdownService, OpenAiMarkdownService>();
 builder.Services.AddSingleton<IEnhanceMarkdownService, EnhanceMarkdownService>();
 builder.Services.AddSingleton<IIPersistentStorageService, BlobPersistentStorageService>();
 builder.Services.AddSingleton<ICacheService, DistributedCacheService>();
+builder.Services.AddSingleton<IMessagingService, ServiceBusMessagingService>();
 
 builder.Services.AddFeatureManagement();
 
@@ -46,6 +48,7 @@ markdownGroup.MapGet("/{subject}.md", async (
     [FromServices] IEnhanceMarkdownService enhanceMarkdownService,
     [FromServices] ICacheService cacheService,
     [FromServices] IIPersistentStorageService persistentStorageService,
+    [FromServices] IMessagingService messagingService,
     [FromServices] IFeatureManager featureManager
     ) =>
 {
@@ -99,6 +102,12 @@ markdownGroup.MapGet("/{subject}.md", async (
     if (isGenerated && await featureManager.IsEnabledAsync(FeatureFlags.PersistentStorage))
     {
         tasks.Add(persistentStorageService.SetMarkdownAsync(subject, markdown, cancellationToken));
+    }
+
+    //send to messaging service to preload results
+    if (await featureManager.IsEnabledAsync(FeatureFlags.Preload))
+    {
+        tasks.Add(messagingService.PreloadLinksAsync(markdown, cancellationToken));
     }
 
     await Task.WhenAll(tasks);

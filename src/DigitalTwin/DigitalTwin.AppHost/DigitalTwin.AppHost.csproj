@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DigitalTwin.Api\DigitalTwin.Api.csproj" />
     <ProjectReference Include="..\DigitalTwin.Blazor\DigitalTwin.Blazor.csproj" />
+    <ProjectReference Include="..\DigitalTwin.Worker\DigitalTwin.Worker.csproj" />
   </ItemGroup>
 
 </Project>
