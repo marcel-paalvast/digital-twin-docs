@@ -88,4 +88,4 @@ Requirements:
     - Feature flag `Cache` allows you to cache results to a Redis cache
     - Feature flag `PersistentStorage` allows you to store results to an Azure Blob storage
 
-[^1]: Only required you use the `PersistentStorage` flag.
+[^1]: Only required when you use the `PersistentStorage` flag.
