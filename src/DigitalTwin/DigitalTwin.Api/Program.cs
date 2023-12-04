@@ -1,14 +1,20 @@
+using DigitalTwin.Api.Constants;
 using DigitalTwin.Api.Models;
 using DigitalTwin.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.FeatureManagement;
 using System.Text;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
+builder.AddServiceDefaults();
+
+builder.AddRedisDistributedCache("cache");
+builder.AddAzureBlobService("blobs");
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    //options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
 
 builder.Services.AddOptions<ApiOptions>().Configure<IConfiguration>((settings, config) =>
@@ -21,12 +27,27 @@ builder.Services.AddOptions<OpenAiOptions>().Configure<IConfiguration>((settings
 });
 
 builder.Services.AddSingleton<IMarkdownService, OpenAiMarkdownService>();
+builder.Services.AddSingleton<IEnhanceMarkdownService, EnhanceMarkdownService>();
+builder.Services.AddSingleton<IIPersistentStorageService, BlobPersistentStorageService>();
+builder.Services.AddSingleton<ICacheService, DistributedCacheService>();
 
+builder.Services.AddFeatureManagement();
 
 var app = builder.Build();
 
+app.MapDefaultEndpoints();
+
 var markdownGroup = app.MapGroup("/markdown");
-markdownGroup.MapGet("/{subject}.md", async (string subject, CancellationToken cancellationToken, [FromServices] IMarkdownService service) =>
+
+markdownGroup.MapGet("/{subject}.md", async (
+    string subject,
+    CancellationToken cancellationToken,
+    [FromServices] IMarkdownService markdownService,
+    [FromServices] IEnhanceMarkdownService enhanceMarkdownService,
+    [FromServices] ICacheService cacheService,
+    [FromServices] IIPersistentStorageService persistentStorageService,
+    [FromServices] IFeatureManager featureManager
+    ) =>
 {
     const int maxChars = 64;
     if (subject.Length > maxChars)
@@ -38,16 +59,51 @@ markdownGroup.MapGet("/{subject}.md", async (string subject, CancellationToken c
         });
     }
 
-    var markdown = await service.GenerateMarkdownAsync(subject, cancellationToken);
+    string? markdown = null;
+    var isCached = false;
+    var isGenerated = false;
+
+    //get from cache
+    if (markdown is null && await featureManager.IsEnabledAsync(FeatureFlags.Cache))
+    {
+        markdown = await cacheService.GetMarkdownAsync(subject, cancellationToken);
+        if (markdown is not null)
+        {
+            isCached = true;
+        }
+    }
+
+    //get from persistent storage
+    if (markdown is null && await featureManager.IsEnabledAsync(FeatureFlags.PersistentStorage))
+    {
+        markdown = await persistentStorageService.GetMarkdownAsync(subject, cancellationToken);
+    }
+
+    //generate new markdown
+    if (markdown is null)
+    {
+        markdown = await markdownService.GenerateMarkdownAsync(subject, cancellationToken);
+        markdown = enhanceMarkdownService.MarkAdditionalLinks(markdown);
+        isGenerated = true;
+    }
+
+    var tasks = new List<Task>();
+
+    //store in cache
+    if (!isCached && await featureManager.IsEnabledAsync(FeatureFlags.Cache))
+    {
+        tasks.Add(cacheService.SetMarkdownAsync(subject, markdown, cancellationToken));
+    }
+
+    //store in persistent storage
+    if (isGenerated && await featureManager.IsEnabledAsync(FeatureFlags.PersistentStorage))
+    {
+        tasks.Add(persistentStorageService.SetMarkdownAsync(subject, markdown, cancellationToken));
+    }
+
+    await Task.WhenAll(tasks);
+
     return Results.Text(content: markdown, contentType: "text/markdown", contentEncoding: Encoding.UTF8, statusCode: 200);
 });
 
 app.Run();
-
-//public record Todo(int Id, string? Title, DateOnly? DueBy = null, bool IsComplete = false);
-
-//[JsonSerializable(typeof(Todo[]))]
-//internal partial class AppJsonSerializerContext : JsonSerializerContext
-//{
-
-//}

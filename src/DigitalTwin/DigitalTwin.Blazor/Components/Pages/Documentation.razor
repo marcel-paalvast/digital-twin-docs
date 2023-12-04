@@ -1,0 +1,50 @@
+﻿@page "/"
+@page "/{Page}.md"
+@using DigitalTwin.Blazor.Services
+@attribute [StreamRendering]
+@inject IDocumentationService DocumentationService
+
+<PageTitle>Documentation</PageTitle>
+
+@if (Content == null)
+{
+    <h1>
+        <span class="skeleton-box" style="width:30%;"></span>
+    </h1>
+    <span class="skeleton-box" style="width:90%;"></span>
+    <span class="skeleton-box" style="width:95%;"></span>
+    <span class="skeleton-box" style="width:93%;"></span>
+    <span class="skeleton-box" style="width:90%;"></span>
+    <span class="whitespace"></span>
+    <h2>
+        <span class="skeleton-box" style="width:35%;"></span>
+    </h2>
+    <span class="skeleton-box" style="width:96%;"></span>
+    <span class="skeleton-box" style="width:91%;"></span>
+    <span class="skeleton-box" style="width:94%;"></span>
+    <span class="whitespace"></span>
+    <h2>
+        <span class="skeleton-box" style="width:32%;"></span>
+    </h2>
+    <span class="skeleton-box" style="width:95%;"></span>
+    <span class="skeleton-box" style="width:91%;"></span>
+    <span class="skeleton-box" style="width:97%;"></span>
+    <span class="skeleton-box" style="width:40%;"></span>
+    <span class="whitespace"></span>
+}
+else
+{
+    @((MarkupString)Content)
+}
+
+@code {
+    [Parameter]
+    public string? Page { get; set; }
+    public string? Content { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Page ??= "main";
+        Content = await DocumentationService.GetDocumentationHtmlAsync(Page, CancellationToken.None);
+    }
+}

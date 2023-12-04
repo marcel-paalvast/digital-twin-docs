@@ -1,0 +1,20 @@
+﻿@using DigitalTwin.Blazor.Models
+@using Microsoft.Extensions.Options
+@inherits LayoutComponentBase
+@inject IOptions<PageOptions> PageOptions;
+
+
+<div class="page">
+    <div class="banner">
+        <h1>@PageOptions.Value.Company.Name Documentation</h1>
+    </div>
+    <article class="content">
+        @Body
+    </article>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
