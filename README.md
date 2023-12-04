@@ -7,6 +7,8 @@ A web application that effortlessly creates a digital twin documentation environ
 
 Using a company name and a brief description, this project will generate a page with internal documentation to be used by employees and contractors. Every page might include links to other valuable topics, allowing you to dive deeper into specific subjects and potentially generate an infinite amount of information!
 
+https://github.com/microsoft/hack-together-dotnet/assets/126659601/6e6d942a-b17c-44fb-80bd-c0d809f2723f
+
 ## Technologies
 
 Some cool technologies used in this project:
