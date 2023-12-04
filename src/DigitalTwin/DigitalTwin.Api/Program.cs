@@ -64,7 +64,7 @@ markdownGroup.MapGet("/{subject}.md", async (
     var isGenerated = false;
 
     //get from cache
-    if (markdown is null && await featureManager.IsEnabledAsync(FeatureFlags.CacheMarkdown))
+    if (markdown is null && await featureManager.IsEnabledAsync(FeatureFlags.Cache))
     {
         markdown = await cacheService.GetMarkdownAsync(subject, cancellationToken);
         if (markdown is not null)
@@ -90,7 +90,7 @@ markdownGroup.MapGet("/{subject}.md", async (
     var tasks = new List<Task>();
 
     //store in cache
-    if (!isCached && await featureManager.IsEnabledAsync(FeatureFlags.CacheMarkdown))
+    if (!isCached && await featureManager.IsEnabledAsync(FeatureFlags.Cache))
     {
         tasks.Add(cacheService.SetMarkdownAsync(subject, markdown, cancellationToken));
     }
